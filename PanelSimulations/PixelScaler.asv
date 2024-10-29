@@ -6,7 +6,7 @@ clc
 clearvars
 close all
 
-scale = 10;
+scale = 14;
 
 % load('NormPxKernel_Round.mat');
 load('NormPxKernel_Square.mat');
