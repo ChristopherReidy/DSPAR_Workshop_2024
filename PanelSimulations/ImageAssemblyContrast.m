@@ -1,5 +1,5 @@
 % ImageAssembly.m
-% function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, ContrastImage,ImageIndex,M_display_to_P3, M_sRGB_to_P3, vertical_resolution, horizontal_resolution)
+function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, M_sRGB_to_P3, vertical_resolution, horizontal_resolution)
 %Take FG/BG images, assemble for output, convert double to uint16
 
 % Assumptions
@@ -30,7 +30,7 @@
             BackgroundImage = imresize(BackgroundImage, [vertical_resolution, horizontal_resolution], 'bilinear'); % Control for BG aspect ratio here
             Background_P3 = reshape(reshape(BackgroundImage,[],3) * M_sRGB_to_P3.',vertical_resolution,horizontal_resolution,3);
         else
-            BackgroundImage_P3 = zeros(vertical_resolution, horizontal_resolution, 3);
+            Background_P3 = zeros(vertical_resolution, horizontal_resolution, 3);
             background_luminance = 0;
         end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,7 +43,7 @@
             Ldispmin = foreground_luminance/CR; % minimum display luminance without ambient light
             
             if CalibratedOutput ~= 0 %May need to modify behavior for FG+BG > monitor brightness
-                combined_image =((foreground_luminance-Ldispmin).*Image/255 + Ldispmin + cfg.stack_transmission(BGIndex).*((background_luminance-BGDisplayMin).*Background_P3/255)+BGDisplayMin) ...
+                combined_image =((foreground_luminance-Ldispmin).*Image/255 + Ldispmin + optical_transmission(BGIndex).*((background_luminance-BGDisplayMin).*Background_P3/255)+BGDisplayMin) ...
                     ./ (CalibratedOutput);
             else
                 combined_image =((cfg.foreground_luminance-Ldispmin).*Image/255 + Ldispmin + optical_transmission.*((background_luminance-BGDisplayMin).*Background_P3/255)+BGDisplayMin) ...

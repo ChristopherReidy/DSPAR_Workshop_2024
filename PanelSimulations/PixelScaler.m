@@ -54,10 +54,10 @@ ImageB = conv2(BOut,Filt);
 ImageB = ImageB.^0.5;
 ImageB = uint16(ImageB.*(2^16-1));
 
-ImageB(1:3,:)=[];
-ImageB(end-2:end,:)=[];
-ImageB(:,1:3)=[];
-ImageB(:,end-2:end)=[];
+% ImageB(1:3,:)=[];
+% ImageB(end-2:end,:)=[];
+% ImageB(:,1:3)=[];
+% ImageB(:,end-2:end)=[];
 
 ImageOut = ImageR;
 ImageOut(:,:,2) = ImageG;
