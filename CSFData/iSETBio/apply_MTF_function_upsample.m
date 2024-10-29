@@ -17,9 +17,6 @@ function Iout = apply_MTF_function_upsample(Iin, ppdImg, FigFlag)
  
         Iout = nan(size(inImgi));
         
-        
-         
- 
         for ii = 1 : 3
              %% Test the ieApplyPSF function
             %% Load 1DOTF and convert

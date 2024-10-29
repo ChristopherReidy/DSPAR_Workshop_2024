@@ -9,10 +9,12 @@ close all
 imscale = 14;
 scale = 14;
 
-load('PxKernel_Round.mat');
-load('NormPxKernel_Round.mat');
 
-input = imread(strcat('Images/8bit_Source/8_bit_Grays_Cine4k.png'));
+% load('NormPxKernel_Round.mat');
+load('NormPxKernel_Square.mat');
+
+% input = imread(strcat('Images/8bit_Source/Peacock.png'));
+input = imread(strcat('Images/8bit_Source/TextExample.png'));
 
 if isa(input,'uint16')
     data = double(input);
@@ -35,7 +37,12 @@ ROut(1:scale:end,1:scale:end)=DataLarge(1:scale:end,1:scale:end,2);
 GOut(1:scale:end,1:scale:end)=DataLarge(1:scale:end,1:scale:end,2);
 BOut(1:scale:end,1:scale:end)=DataLarge(1:scale:end,1:scale:end,3);
 
-Filt = Px10n;
+GridImage = ROut;
+GridImage(:,:,2) = GOut;
+GridImage(:,:,3) = BOut;
+
+Filt = Px14n;
+
 tic
 ImageR = conv2(ROut,Filt);
 ImageR = ImageR.^0.5;
@@ -49,7 +56,15 @@ ImageB = conv2(BOut,Filt);
 ImageB = ImageB.^0.5;
 ImageB = uint16(ImageB.*(2^16-1));
 
+ImageB(1:3,:)=[];
+ImageB(end-2:end,:)=[];
+ImageB(:,1:3)=[];
+ImageB(:,end-2:end)=[];
+
 ImageOut = ImageR;
 ImageOut(:,:,2) = ImageG;
 ImageOut(:,:,3) = ImageB;
 
+
+figure(1)
+imshow(ImageOut)
