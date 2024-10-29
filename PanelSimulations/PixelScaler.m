@@ -1,4 +1,4 @@
-%PanelScaler.m
+%PixelScaler.m
 
 %Scales image to large size for convolution with pixel kernel
 
@@ -6,9 +6,7 @@ clc
 clearvars
 close all
 
-imscale = 14;
 scale = 14;
-
 
 % load('NormPxKernel_Round.mat');
 load('NormPxKernel_Square.mat');
@@ -26,7 +24,7 @@ elseif isa(input,'uint8')
     data = data.^2.2;
 end
 
-DataLarge = imresize(data,imscale,'nearest');
+DataLarge = imresize(data,scale,'nearest');
 
 ROut=zeros(size(DataLarge,1),size(DataLarge,2));
 GOut=zeros(size(DataLarge,1),size(DataLarge,2));

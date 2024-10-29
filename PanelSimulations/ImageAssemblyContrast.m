@@ -69,7 +69,7 @@
                             ./ (optical_transmission.*background_luminance + cfg.foreground_luminance);
             end
         
-            %Add a condition which can use both
+            %Add a condition which can use both cntrast models
 
         end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,6 +77,6 @@
 
 %Gamma encode double image, convert to uint16
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        GammaEncImage = (clip(combined_image,0,1)).^(1/2.2); %TODO: make sure of image class for frame > 1
+        GammaEncImage = (clip(combined_image,0,1)).^(1/2.2); 
         GammaEncImage = uint16(GammaEncImage.*(2^16-1));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
