@@ -6,11 +6,16 @@ close all
 
 BD = 10; %Used for truncation in linear domain
 
-Image = imread('8bitGrayRamp.png');
+Image = imread('8_bit_Grays_Cine4k.png');
 ImageRef = Image;
 
-Image = double(Image)./255;
-Image = Image.^2.2; %Linearize gamma encoded data
+if isequal(class(Image),'uint8')
+    Image = double(Image)./255;
+    Image = Image.^2.2; %Linearize gamma encoded data
+elseif isequal(class(Image),'uint16')
+    Image = double(Image)./(2^16-1);
+    Image = Image.^2.2; %Linearize gamma encoded data
+end
 
 TruncatedImage = BitDepthExplore(Image, BD);
 

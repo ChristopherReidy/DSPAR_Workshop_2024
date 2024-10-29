@@ -6,8 +6,6 @@ close all
 
 BDRef = 18;
 
-
-
 for ii = 1:8
     BD = BDRef-ii;
     GammaData = (0:255)./255;
@@ -20,6 +18,7 @@ figure(1)
 for ii = 1:8
 hold on
 plot(0:255, (LinearDataQuant-TruncatedData(ii,:))./LinearDataQuant, 'linewidth',2)
+legend(strcat())
 end
 hold off
 

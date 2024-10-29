@@ -4,7 +4,7 @@
 %white points
 
 %RGB Primaries and WP data from industry standards
-%C. Reidy 2023
+%C. Reidy 2024
 
 clc
 clearvars
@@ -58,7 +58,7 @@ M_Conversion(abs(M_Conversion)<1e-5) = 0;
 %Apply to example image
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load image and linearize
-TestImage = imread('TestImage.png'); %This is uint8 bit
+TestImage = imread('Peacock.png'); %This is uint8 bit. Peacock.png is a crop from: https://en.wikipedia.org/wiki/Peafowl#/media/File:Peacock_Plumage.jpg
 LinearTestImage = (double(TestImage)./255).^(2.2);
 
 %Vectorize image data
@@ -66,7 +66,8 @@ Resolution = [size(LinearTestImage,1),size(LinearTestImage,2)];
 LinearTestImage_Line = reshape(LinearTestImage,[],3);
 
 %Apply CCM Matrix
-ColorMappedOutput_Line = M_Conversion*LinearTestImage_Line'; %Apply the matrix (note transpose operation on the line image data)
+ColorMappedOutput_Line = M_Conversion*LinearTestImage_Line'; %Apply the matrix 
+%%%(!!!!! NOTE TRANSPOSE operation on the line image data !!!!!)
 
 Output(:,:,1)= reshape(ColorMappedOutput_Line(1,:),Resolution);
 Output(:,:,2)= reshape(ColorMappedOutput_Line(2,:),Resolution);
@@ -74,7 +75,7 @@ Output(:,:,3)= reshape(ColorMappedOutput_Line(3,:),Resolution); %This output is 
 
 %Gamma encode, because we want to show on gamma encoded display
 GammaOutput = Output.^(1/2.2);
-GammaOutput16bit = uint16((2^16-1).*Output); %Scale normalized data from 0-1 to 0-2^16-1
+GammaOutput16bit = uint16((2^16-1).*GammaOutput); %Scale normalized data from 0-1 to 0-2^16-1
 GammaOutput8bit  = uint8(bitshift(GammaOutput16bit,-8)); %Truncate to 8-bits
 
 figure(1)
