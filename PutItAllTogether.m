@@ -29,14 +29,19 @@ image = double(image)./(2^16-1); %Recast as double scaled 0:1 for down stream op
 
 %Large Scale Px Sim
 % % % % % PixelScaler.m %Make this a function, with image and px kernel size as inputs...
-%%%%%%%%%               %Since input is already linearized, we can by pass that step inside 
-%%%%%%%%%               %Define output ImageOut
-
 
 %Apply MTF
 % call apply_MTF_function_upsample.m 
 % MTFImageOut = apply_MTF_function_upsample(image, PPD, 0) 
 % Remember to scale PPD here by the same factor as your px kernel!
+
+
+
+ImageAssemblyContrast(Image, BackgroundImage, M_sRGB_to_P3, vertical_resolution, horizontal_resolution)
+%%%%%%%%%               %Since input is already linearized, we can by pass that step inside 
+%%%%%%%%%               %Define output ImageOut
+
+
 
 
 % The last 4 steps are basically in ImageAssemblyContrast.m
