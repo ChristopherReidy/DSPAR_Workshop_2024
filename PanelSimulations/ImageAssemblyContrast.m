@@ -1,5 +1,5 @@
 % ImageAssembly.m
-function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, M_sRGB_to_P3, vertical_resolution, horizontal_resolution)
+function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, params)
 %Take FG/BG images, assemble for output, convert double to uint16
 
 % Assumptions
@@ -8,31 +8,34 @@ function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, M_sRGB_
 
 
 
-%Set Parameters
+%Set Parameters.  Now defined outside this function in var params
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        CalibratedOutput = 1000; %Images to be shown on display of this brightness.  This is your monitor's brightness in nits
+CalibratedOutput = params.CalibratedOutput; %Images to be shown on display of this brightness.  This is your monitor's brightness in nits
 
-        ContrastMethod = 0; %0 uses global contrast, %any other value uses local contrast.  Make a version that uses both
-        CR = 50; %Contrast Ratio XX:1
-        ContrastModel = 'ContrastKernelExample.mat'; %Contrast Kernel spans -+ 2 deg @ 30 PPD.  Resize and renormalize for your system!
-        ContrastScale = 50./CR; %Scaler used to hit correct contrast ratio
+ContrastMethod = params.ContrastMethod; %0 uses global contrast, %any other value uses local contrast.  Make a version that uses both
+CR = params.CR; %Contrast Ratio XX:1
+ContrastModel = params.ContrastModel; %Contrast Kernel spans -+ 2 deg @ 30 PPD.  Resize and renormalize for your system!
+ContrastScale = params.ContrastScale; %Scaler used to hit correct contrast ratio
 
-        foreground_luminance = 500; %May need to modify behavior 
-        background_luminance = 500; %For calibrated output, foreground_luminance+background_luminance*stack_transmission should be < CalibratedOutput
-        optical_transmission = 0.96; %Transmission of normal 1.5 index glass with no coatings
+foreground_luminance = params.foreground_luminance; %May need to modify behavior 
+background_luminance = params.background_luminance; %For calibrated output, foreground_luminance+background_luminance*stack_transmission should be < CalibratedOutput
+optical_transmission = params.optical_transmission; %Transmission of normal 1.5 index glass with no coatings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %Background Image Handling
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if ~isempty(BackgroundImage)
-            BackgroundImage = (double(BackgroundImageImage)./255).^(2.2);
-            BackgroundImage = imresize(BackgroundImage, [vertical_resolution, horizontal_resolution], 'bilinear'); % Control for BG aspect ratio here
-            Background_P3 = reshape(reshape(BackgroundImage,[],3) * M_sRGB_to_P3.',vertical_resolution,horizontal_resolution,3);
-        else
-            Background_P3 = zeros(vertical_resolution, horizontal_resolution, 3);
-            background_luminance = 0;
-        end 
+vertical_resolution = size(Image,1);
+horizontal_resolution = size(Image,2);
+
+    if ~isempty(BackgroundImage)
+        BackgroundImage = (double(BackgroundImage)./255).^(2.2);
+        BackgroundImage = imresize(BackgroundImage, [vertical_resolution, horizontal_resolution], 'bilinear'); % Control for BG aspect ratio here
+        Background_P3 = BackgroundImage;%The McGill BG image is already P3
+    else
+        Background_P3 = zeros(vertical_resolution, horizontal_resolution, 3);
+        background_luminance = 0;
+    end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -43,14 +46,16 @@ function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, M_sRGB_
             Ldispmin = foreground_luminance/CR; % minimum display luminance without ambient light
             
             if CalibratedOutput ~= 0 %May need to modify behavior for FG+BG > monitor brightness
-                combined_image =((foreground_luminance-Ldispmin).*Image/255 + Ldispmin + optical_transmission.*((background_luminance-Ldispmin).*Background_P3/255)+Ldispmin) ...
+                combined_image =((foreground_luminance-Ldispmin).*Image + Ldispmin + optical_transmission.*((background_luminance-Ldispmin).*Background_P3)+Ldispmin) ...
                     ./ (CalibratedOutput);
             else
-                combined_image =((cfg.foreground_luminance-Ldispmin).*Image/255 + Ldispmin + optical_transmission.*((background_luminance-Ldispmin).*Background_P3/255)+Ldispmin) ...
-                        ./ (optical_transmission.*background_luminance + cfg.foreground_luminance);
+                combined_image =((foreground_luminance-Ldispmin).*Image + Ldispmin + optical_transmission.*((background_luminance-Ldispmin).*Background_P3)+Ldispmin) ...
+                        ./ (optical_transmission.*background_luminance + foreground_luminance);
             end
         
         else
+            Ldispmin = 0;
+
             %Local Contrast
             load(ContrastModel)
             ContrastComponent = zeros(size(Image,1)+size(ContrastKernel,1)-1,size(Image,2)+size(ContrastKernel,1)-1,3);
@@ -62,11 +67,11 @@ function [GammaEncImage] = ImageAssemblyContrast(Image, BackgroundImage, M_sRGB_
             Image = Image+ContrastComponent;
 
             if CalibratedOutput ~= 0 %May need to modify behavior for FG+BG > monitor brightness
-                combined_image =((foreground_luminance).*Image + optical_transmission.*((background_luminance-Ldispmin).*Background_P3/255)+Ldispmin) ...
+                combined_image =((foreground_luminance).*Image + optical_transmission.*((background_luminance-Ldispmin).*Background_P3)+Ldispmin) ...
                             ./ (CalibratedOutput);
             else
-                combined_image =((foreground_luminance).*Image + optical_transmission.*((background_luminance-Ldispmin).*Background_P3/255)+Ldispmin) ...
-                            ./ (optical_transmission.*background_luminance + cfg.foreground_luminance);
+                combined_image =((foreground_luminance).*Image + optical_transmission.*((background_luminance-Ldispmin).*Background_P3)+Ldispmin) ...
+                            ./ (optical_transmission.*background_luminance + foreground_luminance);
             end
         
             %Add a condition which can use both cntrast models

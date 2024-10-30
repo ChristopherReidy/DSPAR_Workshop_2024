@@ -7,14 +7,30 @@ close all
 %Simulation Parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 PipeBD = 14; %Pipeline bit depth
-DisplayPPD = 60; %Simulated display resolution in pixels per degree
+DisplayPPD = 120; %Simulated display resolution in pixels per degree
 global PSFKern
 PSFKern = readmatrix('SimpleSineMTF.csv'); %You can put any MTF here
+
+scale = 10; %Pixel Scale, accepts 10,14,20,25,40 by default
+shape = 'square'; %Px kernel shape, accepts round or square by default
+
+% [] = ColorSpaceConversionMatrix
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %Load Image
 image = imread('Peacock.png');
+BackgroundImage = imread('McGill.png');
+
+
+
+
+
+
+
+%for faster compute and less mem consumption
+image = imresize(image, 0.125, 'bilinear');
 
 
 %Linearize
@@ -29,14 +45,28 @@ image = double(image)./(2^16-1); %Recast as double scaled 0:1 for down stream op
 
 %Large Scale Px Sim
 % % % % % PixelScaler.m %Make this a function, with image and px kernel size as inputs...
+[ImageOutPx] = PixelScalerPAT(image, scale, shape) ;
+
+
+ImageOutMTF = apply_MTF_function_upsample(ImageOutPx, DisplayPPD.*scale, 0); % Remember to scale PPD here by the same factor as your px kernel!
+
+
+GammaEncImage = ImageAssemblyContrast(Image, BackgroundImage);
+
+
+figure(1)
+imshow(ImageOutPx.^(1/2.2))
+
+figure(2)
+imshow(ImageOutMTF.^(1/2.2))
+
+
+
+
 %%%%%%%%%               %Since input is already linearized, we can by pass that step inside 
 %%%%%%%%%               %Define output ImageOut
 
 
-%Apply MTF
-% call apply_MTF_function_upsample.m 
-% MTFImageOut = apply_MTF_function_upsample(image, PPD, 0) 
-% Remember to scale PPD here by the same factor as your px kernel!
 
 
 % The last 4 steps are basically in ImageAssemblyContrast.m
